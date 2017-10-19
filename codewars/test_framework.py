@@ -1,6 +1,8 @@
 # encoding: UTF-8
 
 import unittest
+import inspect
+import os
 from collections import defaultdict
 
 
@@ -32,12 +34,12 @@ class TestTranslator:
     用于将 Codewars Python Test Framework 动态转译成 unittest.TestCase 的派生类的 DSL
     """
 
-    def __init__(self, name: str, namespace: dict):
-        self.name = name
+    def __init__(self, namespace: dict=None, name: str=None):
+        self.name = name or self.guess_name(namespace)
         self.namespace = namespace
         self.behaviors = []
-        self.translated = type(name, (unittest.TestCase,),
-                               dict(__name__=name, __builder__=self, behaviors=self.behaviors))
+        self.translated = type(self.name, (unittest.TestCase,),
+                               dict(__name__=self.name, __builder__=self, behaviors=self.behaviors))
         self.__counter__ = defaultdict(int)
 
     def inject(self):
@@ -76,3 +78,13 @@ class TestTranslator:
     @make_translator
     def expect(self: unittest.TestCase, passed, message=None):
         self.assertTrue(passed, msg=message)
+
+    @staticmethod
+    def guess_name(namespace: dict):
+        if namespace is not None:
+            filename = namespace.get('__file__')
+        else:
+            frame = inspect.stack()[2]
+            filename = frame.filename
+        guessed_name, _ = os.path.splitext(os.path.split(filename)[-1])
+        return guessed_name
