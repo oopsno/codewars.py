@@ -3,7 +3,6 @@
 import unittest
 import inspect
 import os
-from collections import defaultdict
 
 
 def make_translator(assertion):
@@ -11,7 +10,6 @@ def make_translator(assertion):
     根据预期的断言构造转译函数
     """
     from functools import wraps
-    key = assertion.__name__
 
     @wraps(assertion)
     def __after_instantiation__(translator, *args, **kwargs):
@@ -21,9 +19,9 @@ def make_translator(assertion):
             except AssertionError as ae:
                 raise ae
 
-        serial = translator.__counter__[key]
-        name = 'test_{}_{}'.format(key, serial)
-        translator.__counter__[key] += 1
+        serial = translator.__counter__
+        name = 'test_{:03d}'.format(serial)
+        translator.__counter__ += 1
         setattr(translator.translated, name, __assertion__)
 
     return __after_instantiation__
@@ -34,13 +32,14 @@ class TestTranslator:
     用于将 Codewars Python Test Framework 动态转译成 unittest.TestCase 的派生类的 DSL
     """
 
-    def __init__(self, namespace: dict=None, name: str=None):
-        self.name = name or self.guess_name(namespace)
+    def __init__(self, namespace: dict = None):
+        self.name, self.module = self.guess_name(namespace)
         self.namespace = namespace
         self.behaviors = []
         self.translated = type(self.name, (unittest.TestCase,),
                                dict(__name__=self.name, __builder__=self, behaviors=self.behaviors))
-        self.__counter__ = defaultdict(int)
+        self.translated.__module__ = self.module
+        self.__counter__ = 0
 
     def inject(self):
         self.namespace[self.name] = self.translated
@@ -86,5 +85,7 @@ class TestTranslator:
         else:
             frame = inspect.stack()[2]
             filename = frame.filename
-        guessed_name, _ = os.path.splitext(os.path.split(filename)[-1])
-        return guessed_name
+        sp = os.path.split(filename)
+        guessed_name, _ = os.path.splitext(sp[-1])
+        guessed_module = os.path.split(sp[-2])[-1]
+        return guessed_name, guessed_module

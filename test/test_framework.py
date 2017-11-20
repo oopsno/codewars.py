@@ -13,7 +13,8 @@ def raise_nothing():
 
 class TestFramework(unittest.TestCase):
     def setUp(self):
-        with codewars.Test('Pass', {}) as test:
+        namespace = dict(__file__=__file__)
+        with codewars.Test(namespace=namespace) as test:
             test.describe('a dummy test case')
             test.it('should works')
             test.assert_equals(1 + 1, 2, '1 + 1 = 2')
@@ -21,16 +22,16 @@ class TestFramework(unittest.TestCase):
             test.expect(not False, 'passed')
             test.expect_error('Just raise', raise_something)
             self.expect_pass = test.translated
-        with codewars.Test('FailEqual', {}) as test:
+        with codewars.Test(namespace=namespace) as test:
             test.assert_equals(1, 2)
             self.expect_fail_equal = test.translated
-        with codewars.Test('FailNotEqual', {}) as test:
+        with codewars.Test(namespace=namespace) as test:
             test.assert_not_equals(1, 1)
             self.expect_fail_not_equal = test.translated
-        with codewars.Test('FailError', {}) as test:
+        with codewars.Test(namespace=namespace) as test:
             test.expect_error('', raise_nothing)
             self.expect_fail_error = test.translated
-        with codewars.Test('FailPass', {}) as test:
+        with codewars.Test(namespace=namespace) as test:
             test.expect(False)
             self.expect_fail_pass = test.translated
         self.stream = io.StringIO()
