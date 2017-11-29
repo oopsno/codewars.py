@@ -11,5 +11,6 @@ before_script:
   - ./cc-test-reporter before-build
 script:
   - coverage run test/test_all.py
+  - coverage xml
 after_script:
   - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
