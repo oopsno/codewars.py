@@ -1,0 +1,8 @@
+[run]
+branch = True
+include =
+    codewars/*.py
+    solutions/kyu*/*.py
+    test/test_*.py
+omit =
+    solutions/kyu*/__init__.py
