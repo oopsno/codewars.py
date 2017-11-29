@@ -5,10 +5,10 @@ language: python
 python:
   - "3.6"
 before_script:
+  - pip install coverage
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
-  - pip install coverage
 script:
   - coverage run test/test_all.py
 after_script:
